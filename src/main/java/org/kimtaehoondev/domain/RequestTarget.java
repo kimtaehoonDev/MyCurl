@@ -1,9 +1,9 @@
 package org.kimtaehoondev.domain;
 
-public class Url {
+public class RequestTarget {
     private final String value;
 
-    public Url(String value) {
+    public RequestTarget(String value) {
         this.value = value;
     }
 

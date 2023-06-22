@@ -1,14 +1,14 @@
 package org.kimtaehoondev.domain;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
 public class HttpRequest {
-    private final Url url;
+    private final RequestTarget requestTarget;
 
     private final HttpMethod httpMethod;
 
@@ -18,9 +18,9 @@ public class HttpRequest {
 
     private final String body;
 
-    protected HttpRequest(Url url, HttpMethod httpMethod, String httpVersion,
-                       Map<HeaderName, String> headers, String body) {
-        this.url = url;
+    protected HttpRequest(RequestTarget requestTarget, HttpMethod httpMethod, String httpVersion,
+                          Map<HeaderName, String> headers, String body) {
+        this.requestTarget = requestTarget;
         this.httpMethod = HttpMethod.GET;
         this.httpVersion = "HTTP/1.1";
         this.headers = headers;
@@ -33,7 +33,7 @@ public class HttpRequest {
 
 
     public String serialize() {
-        String startLine = httpMethod + " " + url.getValue() + " " + httpVersion;
+        String startLine = httpMethod + " " + requestTarget.getValue() + " " + httpVersion;
         StringJoiner stringJoiner = new StringJoiner("\n");
         stringJoiner.add(startLine);
         for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
@@ -47,18 +47,8 @@ public class HttpRequest {
         return stringJoiner.toString();
     }
 
-    public enum HttpMethod {
-        GET, POST, PUT, PATCH, DELETE;
-
-        public static HttpMethod find(String value) {
-            return Arrays.stream(HttpMethod.values())
-                .filter(each -> Objects.equals(each.name(), value.toUpperCase()))
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("존재하지않는 HTTP REQUEST"));
-        }
-    }
-
     public static class HeaderName {
+        public static final HeaderName HOST = new HeaderName("host");
         private final String value;
         public HeaderName(String value) {
             // TODO 타입 적절한지 검사한다
@@ -92,17 +82,31 @@ public class HttpRequest {
         public static final int NAME = 0;
         public static final int VALUE = 1;
 
-        private final Url url;
+        private final RequestTarget requestTarget;
         private HttpMethod httpMethod;
         private String httpVersion;
         private final Map<HeaderName, String> headers;
         private String body;
 
-        private Builder(String url) {
-            this.url = new Url(url);
-            this.httpMethod = HttpMethod.GET;
-            this.httpVersion = "HTTP/1.1";
-            this.headers = new HashMap<>();
+        private Builder(String urlValue) {
+            try {
+                if (!(urlValue.startsWith("http://") || (urlValue.startsWith("https://")))) {
+                    urlValue = "http://" + urlValue;
+                }
+                URL url = new URL(urlValue);
+                String path = url.getPath();
+                if (path.isBlank()) {
+                    path = "/";
+                }
+                this.requestTarget = new RequestTarget(path);
+                this.httpMethod = HttpMethod.GET;
+                this.httpVersion = "HTTP/1.1";
+                this.headers = new HashMap<>();
+                this.headers.put(HeaderName.HOST, url.getHost());
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("URL을 파싱할 수 없습니다");
+            }
+
         }
 
         public static Builder builder(String url) {
@@ -110,7 +114,13 @@ public class HttpRequest {
         }
 
         public HttpRequest build() {
-            return new HttpRequest(url, httpMethod, httpVersion, headers, body);
+            if (httpMethod == null || httpVersion == null) {
+                throw new RuntimeException("초기화가 다 되지 않았습니다");
+            }
+            if (!headers.containsKey(HeaderName.HOST)) {
+                throw new RuntimeException("host 헤더는 필수값입니다");
+            }
+            return new HttpRequest(requestTarget, httpMethod, httpVersion, headers, body);
         }
 
         public Builder setValueUsingParams(MyOption option, String optionValue) {
