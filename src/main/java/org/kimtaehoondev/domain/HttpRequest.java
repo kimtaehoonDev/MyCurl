@@ -13,8 +13,7 @@ public class HttpRequest {
     public static final int NAME = 0;
     public static final int VALUE = 1;
 
-    // TODO url 타입 만들기
-    private final String url;
+    private final Url url;
 
     private HttpMethod httpMethod;
 
@@ -25,7 +24,7 @@ public class HttpRequest {
     private String body;
 
     public HttpRequest(String url) {
-        this.url = url;
+        this.url = new Url(url);
         this.httpMethod = HttpMethod.GET;
         this.httpVersion = "HTTP/1.1";
         this.headers = new HashMap<>();
@@ -45,7 +44,7 @@ public class HttpRequest {
     }
 
     public String serialize() {
-        String startLine = httpMethod + " " + url + " " + httpVersion;
+        String startLine = httpMethod + " " + url.getValue() + " " + httpVersion;
         StringJoiner stringJoiner = new StringJoiner("\n");
         stringJoiner.add(startLine);
         for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
