@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
-import lombok.EqualsAndHashCode;
-import org.kimtaehoondev.MyOption;
 
 public class HttpRequest {
     public static final String SPLITTER = ":";
@@ -58,7 +56,7 @@ public class HttpRequest {
         return stringJoiner.toString();
     }
 
-    public void setUsingParams(MyOption option, String optionValue) {
+    public void setValueUsingParams(MyOption option, String optionValue) {
         if (option == MyOption.HTTP_REQUEST_METHOD) {
             this.httpMethod = HttpMethod.find(optionValue);
             return;
@@ -93,11 +91,10 @@ public class HttpRequest {
             return Arrays.stream(HttpMethod.values())
                 .filter(each -> Objects.equals(each.name(), value.toUpperCase()))
                 .findAny()
-                .orElseThrow(() -> new RuntimeException("존재하지않는 HTTPREQUEST"));
+                .orElseThrow(() -> new RuntimeException("존재하지않는 HTTP REQUEST"));
         }
     }
 
-    @EqualsAndHashCode
     public static class HeaderName {
         private final String value;
         public HeaderName(String value) {
@@ -107,6 +104,23 @@ public class HttpRequest {
 
         public String getValue() {
             return value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            HeaderName that = (HeaderName) o;
+            return Objects.equals(value, that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value);
         }
     }
 }

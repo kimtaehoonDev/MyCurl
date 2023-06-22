@@ -3,6 +3,7 @@ package org.kimtaehoondev;
 import java.util.Arrays;
 import org.apache.commons.cli.CommandLine;
 import org.kimtaehoondev.domain.HttpRequest;
+import org.kimtaehoondev.domain.MyOption;
 
 public class MyCurl {
     private final HttpRequest request;
@@ -26,7 +27,7 @@ public class MyCurl {
         for (MyOption option : MyOption.values()) {
             String optName = option.getOptName();
             if (commandLine.hasOption(optName)) {
-                this.request.setUsingParams(option, commandLine.getOptionValue(optName));
+                this.request.setValueUsingParams(option, commandLine.getOptionValue(optName));
             }
         }
     }

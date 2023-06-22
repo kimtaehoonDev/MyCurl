@@ -1,4 +1,4 @@
-package org.kimtaehoondev;
+package org.kimtaehoondev.domain;
 
 import org.apache.commons.cli.Option;
 
