@@ -1,17 +1,23 @@
 package org.kimtaehoondev.domain;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import org.kimtaehoondev.MyOption;
 
 public class HttpRequest {
     public static final String SPLITTER = ":";
     public static final int NAME = 0;
     public static final int VALUE = 1;
 
+    // TODO url 타입 만들기
     private final String url;
+
     private HttpMethod httpMethod;
+
     private String httpVersion;
 
     private final Map<HeaderName, String> headers;
@@ -38,25 +44,70 @@ public class HttpRequest {
         headers.put(headerName, headerValue);
     }
 
+    public String serialize() {
+        String startLine = httpMethod + " " + url + " " + httpVersion;
+        StringJoiner stringJoiner = new StringJoiner("\n");
+        stringJoiner.add(startLine);
+        for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
+            stringJoiner.add(entry.getKey().getValue() + ": " + entry.getValue());
+        }
+        if (body != null) {
+            stringJoiner.add("");
+            stringJoiner.add(body);
+        }
+
+        return stringJoiner.toString();
+    }
+
+    public void setUsingParams(MyOption option, String optionValue) {
+        if (option == MyOption.HTTP_REQUEST_METHOD) {
+            this.httpMethod = HttpMethod.find(optionValue);
+            return;
+        }
+        if (option == MyOption.HEADER) {
+            addHeader(optionValue);
+            return;
+        }
+        if (option == MyOption.DATA) {
+            setBody(optionValue);
+            return;
+        }
+        throw new RuntimeException("선택할 수 없는 Option입니다");
+    }
+
+    public void setHttpMethod(HttpMethod httpMethod) {
+        this.httpMethod = httpMethod;
+    }
+
+    public void setHttpVersion(String httpVersion) {
+        this.httpVersion = httpVersion;
+    }
+
     public void setBody(String body) {
         this.body = body;
     }
 
-    public String serialize() {
-        return null;
-    }
-
     public enum HttpMethod {
         GET, POST, PUT, PATCH, DELETE;
+
+        public static HttpMethod find(String value) {
+            return Arrays.stream(HttpMethod.values())
+                .filter(each -> Objects.equals(each.name(), value.toUpperCase()))
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("존재하지않는 HTTPREQUEST"));
+        }
     }
 
     @EqualsAndHashCode
-    @Getter
     public static class HeaderName {
         private final String value;
         public HeaderName(String value) {
             // TODO 타입 적절한지 검사한다
             this.value = value.toLowerCase().trim();
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }

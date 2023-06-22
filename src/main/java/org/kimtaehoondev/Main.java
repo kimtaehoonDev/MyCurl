@@ -2,6 +2,7 @@ package org.kimtaehoondev;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        MyCurl myCurl = new MyCurl(args);
+        myCurl.run();
     }
 }
