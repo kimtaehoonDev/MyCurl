@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
+import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequest {
     private final RequestTarget requestTarget;
@@ -50,6 +51,7 @@ public class HttpRequest {
     public static class HeaderName {
         public static final HeaderName HOST = new HeaderName("host");
         private final String value;
+
         public HeaderName(String value) {
             // TODO 타입 적절한지 검사한다
             this.value = value.toLowerCase().trim();
@@ -89,23 +91,16 @@ public class HttpRequest {
         private String body;
 
         private Builder(String urlValue) {
-            try {
-                if (!(urlValue.startsWith("http://") || (urlValue.startsWith("https://")))) {
-                    urlValue = "http://" + urlValue;
-                }
-                URL url = new URL(urlValue);
-                String path = url.getPath();
-                if (path.isBlank()) {
-                    path = "/";
-                }
-                this.requestTarget = new RequestTarget(path);
-                this.httpMethod = HttpMethod.GET;
-                this.httpVersion = "HTTP/1.1";
-                this.headers = new HashMap<>();
-                this.headers.put(HeaderName.HOST, url.getHost());
-            } catch (MalformedURLException e) {
-                throw new RuntimeException("URL을 파싱할 수 없습니다");
+            URL url = UrlParser.parse(urlValue);
+            String path = url.getPath();
+            if (path.isBlank()) {
+                path = "/";
             }
+            this.requestTarget = new RequestTarget(path);
+            this.httpMethod = HttpMethod.GET;
+            this.httpVersion = "HTTP/1.1";
+            this.headers = new HashMap<>();
+            this.headers.put(HeaderName.HOST, url.getHost());
 
         }
 

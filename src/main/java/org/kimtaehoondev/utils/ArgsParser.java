@@ -1,4 +1,4 @@
-package org.kimtaehoondev;
+package org.kimtaehoondev.utils;
 
 import java.util.Arrays;
 import org.apache.commons.cli.CommandLine;
@@ -8,7 +8,7 @@ import org.apache.commons.cli.ParseException;
 import org.kimtaehoondev.domain.MyOption;
 
 public class ArgsParser {
-    static CommandLine makeCmdUsingArgs(String[] args) {
+    public static CommandLine makeCmdUsingArgs(String[] args) {
         try {
             DefaultParser parser = new DefaultParser();
             Options options = makeOptionsUsingValues();
@@ -18,7 +18,7 @@ public class ArgsParser {
         }
     }
 
-    public static Options makeOptionsUsingValues() {
+    private static Options makeOptionsUsingValues() {
         Options options = new Options();
         Arrays.stream(MyOption.values())
             .map(MyOption::getOption)
