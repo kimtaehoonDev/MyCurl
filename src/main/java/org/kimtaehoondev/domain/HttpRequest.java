@@ -1,6 +1,5 @@
 package org.kimtaehoondev.domain;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +21,8 @@ public class HttpRequest {
     protected HttpRequest(RequestTarget requestTarget, HttpMethod httpMethod, String httpVersion,
                           Map<HeaderName, String> headers, String body) {
         this.requestTarget = requestTarget;
-        this.httpMethod = HttpMethod.GET;
-        this.httpVersion = "HTTP/1.1";
+        this.httpMethod = httpMethod;
+        this.httpVersion = httpVersion;
         this.headers = headers;
         this.body = body;
     }
@@ -40,12 +39,22 @@ public class HttpRequest {
         for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
             stringJoiner.add(entry.getKey().getValue() + ": " + entry.getValue());
         }
+        stringJoiner.add("");
+
         if (body != null) {
-            stringJoiner.add("");
             stringJoiner.add(body);
         }
 
         return stringJoiner.toString();
+    }
+
+    public String getHost() {
+        return headers.get(HeaderName.HOST);
+    }
+
+    public int getPort() {
+        // TODO 추후 변경하기. HTTP 메세지 내에서 어디에 PORT 위치하는지 모름
+        return 80;
     }
 
     public static class HeaderName {
