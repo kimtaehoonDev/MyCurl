@@ -1,5 +1,6 @@
 package org.kimtaehoondev.domain;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,39 +8,29 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 public class HttpRequest {
-    public static final String SPLITTER = ":";
-    public static final int NAME = 0;
-    public static final int VALUE = 1;
-
     private final Url url;
 
-    private HttpMethod httpMethod;
+    private final HttpMethod httpMethod;
 
-    private String httpVersion;
+    private final String httpVersion;
 
     private final Map<HeaderName, String> headers;
 
-    private String body;
+    private final String body;
 
-    public HttpRequest(String url) {
-        this.url = new Url(url);
+    protected HttpRequest(Url url, HttpMethod httpMethod, String httpVersion,
+                       Map<HeaderName, String> headers, String body) {
+        this.url = url;
         this.httpMethod = HttpMethod.GET;
         this.httpVersion = "HTTP/1.1";
-        this.headers = new HashMap<>();
+        this.headers = headers;
+        this.body = body;
     }
 
-    public void addHeader(String value) {
-        String[] nameAndValue = value.split(SPLITTER);
-        if (nameAndValue.length != 2) {
-            throw new RuntimeException("헤더와 값으로만 이뤄져야 한다");
-        }
-        HeaderName headerName = new HeaderName(nameAndValue[NAME].trim());
-        String headerValue = nameAndValue[VALUE].trim();
-        if (headers.containsKey(headerName)) {
-            throw new RuntimeException("이미 존재하는 헤더");
-        }
-        headers.put(headerName, headerValue);
+    public static Builder builder(String url) {
+        return Builder.builder(url);
     }
+
 
     public String serialize() {
         String startLine = httpMethod + " " + url.getValue() + " " + httpVersion;
@@ -54,34 +45,6 @@ public class HttpRequest {
         }
 
         return stringJoiner.toString();
-    }
-
-    public void setValueUsingParams(MyOption option, String optionValue) {
-        if (option == MyOption.HTTP_REQUEST_METHOD) {
-            this.httpMethod = HttpMethod.find(optionValue);
-            return;
-        }
-        if (option == MyOption.HEADER) {
-            addHeader(optionValue);
-            return;
-        }
-        if (option == MyOption.DATA) {
-            setBody(optionValue);
-            return;
-        }
-        throw new RuntimeException("선택할 수 없는 Option입니다");
-    }
-
-    public void setHttpMethod(HttpMethod httpMethod) {
-        this.httpMethod = httpMethod;
-    }
-
-    public void setHttpVersion(String httpVersion) {
-        this.httpVersion = httpVersion;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
     }
 
     public enum HttpMethod {
@@ -121,6 +84,62 @@ public class HttpRequest {
         @Override
         public int hashCode() {
             return Objects.hash(value);
+        }
+    }
+
+    public static class Builder {
+        public static final String SPLITTER = ":";
+        public static final int NAME = 0;
+        public static final int VALUE = 1;
+
+        private final Url url;
+        private HttpMethod httpMethod;
+        private String httpVersion;
+        private final Map<HeaderName, String> headers;
+        private String body;
+
+        private Builder(String url) {
+            this.url = new Url(url);
+            this.httpMethod = HttpMethod.GET;
+            this.httpVersion = "HTTP/1.1";
+            this.headers = new HashMap<>();
+        }
+
+        public static Builder builder(String url) {
+            return new Builder(url);
+        }
+
+        public HttpRequest build() {
+            return new HttpRequest(url, httpMethod, httpVersion, headers, body);
+        }
+
+        public Builder setValueUsingParams(MyOption option, String optionValue) {
+            if (option == MyOption.HTTP_REQUEST_METHOD) {
+                this.httpMethod = HttpMethod.find(optionValue);
+                return this;
+            }
+            if (option == MyOption.HEADER) {
+                addHeader(optionValue);
+                return this;
+            }
+            if (option == MyOption.DATA) {
+                this.body = optionValue;
+                return this;
+            }
+            throw new RuntimeException("선택할 수 없는 Option입니다");
+        }
+
+        private void addHeader(String value) {
+            String[] nameAndValue = value.split(SPLITTER);
+            if (nameAndValue.length != 2) {
+                throw new RuntimeException("헤더와 값으로만 이뤄져야 한다");
+            }
+            HeaderName headerName = new HeaderName(nameAndValue[NAME].trim());
+            String headerValue = nameAndValue[VALUE].trim();
+            if (headers.containsKey(headerName)) {
+                throw new RuntimeException("이미 존재하는 헤더");
+            }
+            headers.put(headerName, headerValue);
         }
     }
 }

@@ -9,11 +9,7 @@ public class MyCurl {
     private final HttpRequest request;
 
     public MyCurl(String[] args) {
-        String url = args[args.length - 1];
-        this.request = new HttpRequest(url);
-
-        String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
-        initHttpRequest(argsExceptUrl);
+        this.request = makeHttpRequest(args);
     }
 
     public void run() {
@@ -21,15 +17,20 @@ public class MyCurl {
         // TODO requestHeader를 URL로 요청보낸다
     }
 
-    public void initHttpRequest(String[] args) {
-        CommandLine commandLine = ArgsParser.makeCmdUsingArgs(args);
+    public HttpRequest makeHttpRequest(String[] args) {
+        String url = args[args.length - 1];
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(url);
+
+        String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
+        CommandLine commandLine = ArgsParser.makeCmdUsingArgs(argsExceptUrl);
 
         for (MyOption option : MyOption.values()) {
             String optName = option.getOptName();
             if (commandLine.hasOption(optName)) {
-                this.request.setValueUsingParams(option, commandLine.getOptionValue(optName));
+                httpRequestBuilder.setValueUsingParams(option, commandLine.getOptionValue(optName));
             }
         }
+        return httpRequestBuilder.build();
     }
 }
 
