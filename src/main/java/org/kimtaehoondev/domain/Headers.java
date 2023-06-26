@@ -17,6 +17,10 @@ public class Headers {
         headers.add(new Header(key, value));
     }
 
+    public void put(Header header) {
+        put(header.getKey(), header.getValue());
+    }
+
     public boolean containsKey(HeaderName key) {
         return store.containsKey(key);
     }

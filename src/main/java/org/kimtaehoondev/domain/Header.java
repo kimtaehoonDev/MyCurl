@@ -36,11 +36,11 @@ public class Header {
     }
 
     public boolean isKeyEquals(String key) {
-        return this.key.getValue().equals(key);
+        return this.key.getValue().equals(key.toLowerCase().trim());
     }
 
     public boolean isValueEqual(String value) {
-        return this.value.equals(value);
+        return this.value.equals(value.toLowerCase().trim());
     }
 
     @Override
