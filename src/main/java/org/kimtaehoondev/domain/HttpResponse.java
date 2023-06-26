@@ -57,7 +57,7 @@ public class HttpResponse {
         StringJoiner stringJoiner = new StringJoiner("\n");
         stringJoiner.add(httpVersion + " " + httpStatus);
         for (Header header : headers) {
-            stringJoiner.add(header.get());
+            stringJoiner.add(header.getPrettier());
         }
         stringJoiner.add("");
         stringJoiner.add(body);

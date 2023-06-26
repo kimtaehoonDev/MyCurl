@@ -54,6 +54,7 @@ public class MyCurl {
         throws IOException {
         List<String> lines = request.serialize();
         for (String line : lines) {
+            System.out.println("line = " + line);
             writerToServer.write(line + CRLF);
         }
         writerToServer.flush();

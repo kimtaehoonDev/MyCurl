@@ -2,11 +2,9 @@ package org.kimtaehoondev.domain;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.utils.UrlParser;
 
@@ -18,12 +16,12 @@ public class HttpRequest {
 
     private final String httpVersion;
 
-    private final Map<HeaderName, String> headers;
+    private final Headers headers;
 
     private final String body;
 
     protected HttpRequest(RequestTarget requestTarget, HttpMethod httpMethod, String httpVersion,
-                          Map<HeaderName, String> headers, String body) {
+                          Headers headers, String body) {
         this.requestTarget = requestTarget;
         this.httpMethod = httpMethod;
         this.httpVersion = httpVersion;
@@ -41,20 +39,22 @@ public class HttpRequest {
         String startLine = httpMethod + " " + requestTarget.getValue() + " " + httpVersion;
         result.add(startLine);
 
-        for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
-            result.add(entry.getKey().getValue() + ": " + entry.getValue());
-        }
-        result.add("");
+        List<String> total = headers.getAll().stream()
+            .map(Header::getPrettier)
+            .collect(Collectors.toList());
+        result.addAll(total);
 
         if (body != null) {
             result.add(body);
         }
-
         return result;
     }
 
     public String getHost() {
-        String host = headers.get(HeaderName.HOST);
+        String host = headers.get(HeaderName.HOST).stream()
+            .findAny()
+            .map(Header::getValue)
+            .orElseThrow(() -> new RuntimeException("호스트 없어"));
         if (host.contains(":")) {
             return host.substring(0, host.indexOf(":"));
         }
@@ -62,39 +62,11 @@ public class HttpRequest {
     }
 
     public Integer getPort() {
-        String host = headers.get(HeaderName.HOST);
+        String host = headers.get(HeaderName.HOST).stream()
+            .findAny()
+            .map(Header::getValue)
+            .orElseThrow(() -> new RuntimeException("호스트 없어"));
         return Integer.parseInt(host.substring(host.indexOf(":") + 1));
-    }
-
-    public static class HeaderName {
-        public static final HeaderName HOST = new HeaderName("host");
-        private final String value;
-
-        public HeaderName(String value) {
-            // TODO 타입 적절한지 검사한다
-            this.value = value.toLowerCase().trim();
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            HeaderName that = (HeaderName) o;
-            return Objects.equals(value, that.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(value);
-        }
     }
 
     public static class Builder {
@@ -105,7 +77,7 @@ public class HttpRequest {
         private final RequestTarget requestTarget;
         private HttpMethod httpMethod;
         private String httpVersion;
-        private final Map<HeaderName, String> headers;
+        private final Headers headers;
         private String body;
 
         private Builder(String urlValue) {
@@ -118,9 +90,8 @@ public class HttpRequest {
             this.requestTarget = new RequestTarget(path);
             this.httpMethod = HttpMethod.GET;
             this.httpVersion = "HTTP/1.1";
-            this.headers = new HashMap<>();
+            this.headers = new Headers();
             this.headers.put(HeaderName.HOST, url.getHost() + ":" + url.getPort());
-
         }
 
         public static Builder builder(String url) {
