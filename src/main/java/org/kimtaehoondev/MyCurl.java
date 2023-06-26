@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.domain.HttpRequest;
@@ -34,7 +35,7 @@ public class MyCurl {
                 new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
             // 메세지를 한줄씩 서버로 보낸다
-            String[] lines = request.serialize().split("\n");
+            List<String> lines = request.serialize();
             for (String line : lines) {
                 System.out.println("request |" + line);
                 writerToServer.write(line+CRLF);

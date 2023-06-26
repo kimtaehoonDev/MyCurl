@@ -1,7 +1,9 @@
 package org.kimtaehoondev.domain;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -34,20 +36,21 @@ public class HttpRequest {
     }
 
 
-    public String serialize() {
+    public List<String> serialize() {
+        List<String> result = new ArrayList<>();
         String startLine = httpMethod + " " + requestTarget.getValue() + " " + httpVersion;
-        StringJoiner stringJoiner = new StringJoiner("\n");
-        stringJoiner.add(startLine);
+        result.add(startLine);
+
         for (Map.Entry<HeaderName, String> entry : headers.entrySet()) {
-            stringJoiner.add(entry.getKey().getValue() + ": " + entry.getValue());
+            result.add(entry.getKey().getValue() + ": " + entry.getValue());
         }
-        stringJoiner.add("");
+        result.add("");
 
         if (body != null) {
-            stringJoiner.add(body);
+            result.add(body);
         }
 
-        return stringJoiner.toString();
+        return result;
     }
 
     public String getHost() {
