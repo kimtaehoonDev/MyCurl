@@ -59,8 +59,8 @@ public class MyCurl {
 
             // Content-Length타입일 때
             int totalLength = 0;
-            while ((line = readerFromServer.readLine()) != null &&
-                httpResponse.getContentLength() != totalLength) {
+            while (httpResponse.getContentLength() != totalLength
+                && (line = readerFromServer.readLine()) != null) {
                 totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
                 System.out.println("body:" + line);
             }
