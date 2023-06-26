@@ -8,6 +8,7 @@ import java.util.StringJoiner;
 import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequest {
+
     private final RequestTarget requestTarget;
 
     private final HttpMethod httpMethod;
@@ -49,12 +50,16 @@ public class HttpRequest {
     }
 
     public String getHost() {
-        return headers.get(HeaderName.HOST);
+        String host = headers.get(HeaderName.HOST);
+        if (host.contains(":")) {
+            return host.substring(0, host.indexOf(":"));
+        }
+        return host;
     }
 
-    public int getPort() {
-        // TODO 추후 변경하기. HTTP 메세지 내에서 어디에 PORT 위치하는지 모름
-        return 80;
+    public Integer getPort() {
+        String host = headers.get(HeaderName.HOST);
+        return Integer.parseInt(host.substring(host.indexOf(":") + 1));
     }
 
     public static class HeaderName {
@@ -105,11 +110,12 @@ public class HttpRequest {
             if (path.isBlank()) {
                 path = "/";
             }
+
             this.requestTarget = new RequestTarget(path);
             this.httpMethod = HttpMethod.GET;
             this.httpVersion = "HTTP/1.1";
             this.headers = new HashMap<>();
-            this.headers.put(HeaderName.HOST, url.getHost());
+            this.headers.put(HeaderName.HOST, url.getHost() + ":" + url.getPort());
 
         }
 
