@@ -7,11 +7,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.domain.HttpRequest;
+import org.kimtaehoondev.domain.HttpResponse;
 import org.kimtaehoondev.utils.ArgsParser;
 
 public class MyCurl {
@@ -38,15 +41,28 @@ public class MyCurl {
             List<String> lines = request.serialize();
             for (String line : lines) {
                 System.out.println("request |" + line);
-                writerToServer.write(line+CRLF);
+                writerToServer.write(line + CRLF);
             }
             writerToServer.write(CRLF);
             writerToServer.flush();
 
-            // 한줄씩 응답을 출력한다
+
+            HttpResponse httpResponse = new HttpResponse();
             String line;
-            while ((line = readerFromServer.readLine()) != null) {
-                System.out.println("response |" + line);
+            line = readerFromServer.readLine();
+            httpResponse.setStartLine(line);
+            while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
+                // 헤더를 만든다
+                System.out.println("resp[:" + line);
+                httpResponse.addHeader(line);
+            }
+
+            // Content-Length타입일 때
+            int totalLength = 0;
+            while ((line = readerFromServer.readLine()) != null &&
+                httpResponse.getContentLength() != totalLength) {
+                totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
+                System.out.println("body:" + line);
             }
 
         } catch (UnknownHostException e) {
