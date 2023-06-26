@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class HttpResponse {
@@ -50,5 +51,16 @@ public class HttpResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public String serialize() {
+        StringJoiner stringJoiner = new StringJoiner("\n");
+        stringJoiner.add(httpVersion + " " + httpStatus);
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            stringJoiner.add(entry.getKey() + ": " + entry.getValue());
+        }
+        stringJoiner.add("");
+        stringJoiner.add(body);
+        return stringJoiner.toString();
     }
 }

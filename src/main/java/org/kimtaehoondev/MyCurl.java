@@ -15,6 +15,7 @@ import org.kimtaehoondev.domain.HttpResponse;
 
 public class MyCurl {
     public static final String CRLF = "\r\n";
+    public static final int LINE_BREAK_LENGTH = 1;
 
     private final HttpRequestFactory httpRequestFactory;
 
@@ -32,7 +33,8 @@ public class MyCurl {
                 new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
             sendRequestToServer(request, writerToServer);
-            receiveResponseFromServer(readerFromServer);
+            HttpResponse httpResponse = receiveResponseFromServer(readerFromServer);
+            System.out.println(httpResponse.serialize());
 
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -50,7 +52,6 @@ public class MyCurl {
         throws IOException {
         List<String> lines = request.serialize();
         for (String line : lines) {
-            System.out.println("request |" + line);
             writerToServer.write(line + CRLF);
         }
         writerToServer.flush();
@@ -62,19 +63,29 @@ public class MyCurl {
     private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
         HttpResponse httpResponse = new HttpResponse();
 
-        String line;
-        line = readerFromServer.readLine();
+        receiveResponseHeaderFromServer(httpResponse, readerFromServer);
+        String body = receiveResponseBodyFromServer(httpResponse, readerFromServer);
+        httpResponse.setBody(body);
+
+        return httpResponse;
+    }
+
+    private static void receiveResponseHeaderFromServer(HttpResponse httpResponse, BufferedReader readerFromServer)
+        throws IOException {
+        String line = readerFromServer.readLine();
         httpResponse.setStartLine(line);
 
         while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
-            // 헤더를 만든다
-            System.out.println("resp HEADER]" + line);
             httpResponse.addHeader(line);
         }
+    }
 
-        // Content-Length타입일 때
+    private String receiveResponseBodyFromServer(HttpResponse httpResponse,
+                                                 BufferedReader readerFromServer) throws IOException {
+        StringJoiner stringJoiner = new StringJoiner("\n");
+        String line;
+
         if (httpResponse.isChunked()) {
-            StringJoiner stringJoiner = new StringJoiner("\n");
             Integer chunkedSize;
             while (true) {
                 chunkedSize = Integer.parseInt(readerFromServer.readLine(), 16); // 16진수
@@ -84,19 +95,16 @@ public class MyCurl {
                 }
                 stringJoiner.add(line);
             }
-            httpResponse.setBody(stringJoiner.toString());
-            return httpResponse;
+            return stringJoiner.toString();
         }
 
         int totalLength = 0;
-        StringJoiner stringJoiner = new StringJoiner("\n");
         while (httpResponse.getContentLength() != totalLength
             && (line = readerFromServer.readLine()) != null) {
-            totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
+            totalLength += (LINE_BREAK_LENGTH + line.getBytes(StandardCharsets.UTF_8).length);
             stringJoiner.add(line);
         }
-        httpResponse.setBody(stringJoiner.toString());
-        return httpResponse;
+        return stringJoiner.toString();
     }
 
 }
