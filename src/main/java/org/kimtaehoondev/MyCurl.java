@@ -8,14 +8,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
+import java.util.StringJoiner;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.HttpResponse;
-import org.kimtaehoondev.utils.ArgsParser;
 
 public class MyCurl {
     public static final String CRLF = "\r\n";
@@ -46,36 +42,61 @@ public class MyCurl {
     }
 
 
+    /**
+     * 메세지를 한줄씩 서버로 보낸다.
+     * 각 줄의 끝에는 CRLF가 붙어야 한다.
+     */
     private void sendRequestToServer(HttpRequest request, BufferedWriter writerToServer)
         throws IOException {
-        // 메세지를 한줄씩 서버로 보낸다
         List<String> lines = request.serialize();
         for (String line : lines) {
             System.out.println("request |" + line);
             writerToServer.write(line + CRLF);
         }
-        writerToServer.write(CRLF);
         writerToServer.flush();
     }
 
-    private void receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
+    /**
+     * 서버에서 응답을 받아온다
+     */
+    private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
         HttpResponse httpResponse = new HttpResponse();
+
         String line;
         line = readerFromServer.readLine();
         httpResponse.setStartLine(line);
+
         while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
             // 헤더를 만든다
-            System.out.println("resp[:" + line);
+            System.out.println("resp HEADER]" + line);
             httpResponse.addHeader(line);
         }
 
         // Content-Length타입일 때
+        if (httpResponse.isChunked()) {
+            StringJoiner stringJoiner = new StringJoiner("\n");
+            Integer chunkedSize;
+            while (true) {
+                chunkedSize = Integer.parseInt(readerFromServer.readLine(), 16); // 16진수
+                line = readerFromServer.readLine();
+                if (chunkedSize == 0) {
+                    break;
+                }
+                stringJoiner.add(line);
+            }
+            httpResponse.setBody(stringJoiner.toString());
+            return httpResponse;
+        }
+
         int totalLength = 0;
+        StringJoiner stringJoiner = new StringJoiner("\n");
         while (httpResponse.getContentLength() != totalLength
             && (line = readerFromServer.readLine()) != null) {
             totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
-            System.out.println("body:" + line);
+            stringJoiner.add(line);
         }
+        httpResponse.setBody(stringJoiner.toString());
+        return httpResponse;
     }
 
 }

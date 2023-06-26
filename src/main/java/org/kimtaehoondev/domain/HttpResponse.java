@@ -11,6 +11,7 @@ public class HttpResponse {
     private Integer httpStatus;
     private boolean isChunked = false;
     private Integer contentLength;
+    private String body;
 
     private final Map<String, String> headers = new HashMap<>();
 
@@ -26,7 +27,7 @@ public class HttpResponse {
             .collect(Collectors.toList());
         headers.put(values.get(0), values.get(1));
 
-        if (values.get(0).equals("Content-Type") && values.get(1).equals("chunked")) {
+        if (values.get(0).equals("Transfer-Encoding") && values.get(1).equals("chunked")) {
             isChunked = true;
         }
         if (values.get(0).equals("Content-Length")) {
@@ -36,5 +37,18 @@ public class HttpResponse {
 
     public Integer getContentLength() {
         return contentLength;
+    }
+
+    public boolean isChunked() {
+        return isChunked;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+
+    }
+
+    public String getBody() {
+        return body;
     }
 }
