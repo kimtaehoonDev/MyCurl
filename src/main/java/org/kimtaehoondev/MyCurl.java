@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import org.kimtaehoondev.domain.Header;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.HttpResponse;
 
@@ -67,7 +68,7 @@ public class MyCurl {
 
         httpResponse.setStartLine(readerFromServer.readLine());
 
-        List<String> headers = receiveResponseHeaderFromServer(readerFromServer);
+        List<Header> headers = receiveResponseHeaderFromServer(readerFromServer);
         httpResponse.setHeaders(headers);
 
         String body = receiveResponseBodyFromServer(httpResponse, readerFromServer);
@@ -76,12 +77,12 @@ public class MyCurl {
         return httpResponse;
     }
 
-    private List<String> receiveResponseHeaderFromServer(BufferedReader readerFromServer)
+    private List<Header> receiveResponseHeaderFromServer(BufferedReader readerFromServer)
         throws IOException {
-        List<String> headers = new ArrayList<>();
+        List<Header> headers = new ArrayList<>();
         String line;
         while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
-            headers.add(line);
+            headers.add(new Header(line));
         }
         return headers;
     }

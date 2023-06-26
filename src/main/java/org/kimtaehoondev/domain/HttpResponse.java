@@ -1,11 +1,8 @@
 package org.kimtaehoondev.domain;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 public class HttpResponse {
     private String httpVersion;
@@ -14,7 +11,7 @@ public class HttpResponse {
     private Integer contentLength;
     private String body;
 
-    private final Map<String, String> headers = new HashMap<>();
+    private final List<Header> headers = new ArrayList<>();
 
     public void setStartLine(String line) {
         String[] values = line.split(" ");
@@ -33,38 +30,34 @@ public class HttpResponse {
 
     public void setBody(String body) {
         this.body = body;
-
     }
 
     public String getBody() {
         return body;
     }
 
-    public void setHeaders(List<String> headers) {
-        for (String header : headers) {
+    public void setHeaders(List<Header> headers) {
+        for (Header header : headers) {
             addHeader(header);
         }
     }
 
-    private void addHeader(String line) {
-        List<String> values = Arrays.stream(line.split(":"))
-            .map(String::trim)
-            .collect(Collectors.toList());
-        headers.put(values.get(0), values.get(1));
+    private void addHeader(Header header) {
+        headers.add(header);
 
-        if (values.get(0).equals("Transfer-Encoding") && values.get(1).equals("chunked")) {
+        if (header.isKeyEquals("Transfer-Encoding") && header.isValueEqual("chunked")) {
             isChunked = true;
         }
-        if (values.get(0).equals("Content-Length")) {
-            contentLength = Integer.parseInt(values.get(1));
+        if (header.isKeyEquals("Content-Length")) {
+            contentLength = Integer.parseInt(header.getValue());
         }
     }
 
     public String serialize() {
         StringJoiner stringJoiner = new StringJoiner("\n");
         stringJoiner.add(httpVersion + " " + httpStatus);
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            stringJoiner.add(entry.getKey() + ": " + entry.getValue());
+        for (Header header : headers) {
+            stringJoiner.add(header.get());
         }
         stringJoiner.add("");
         stringJoiner.add(body);
