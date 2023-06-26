@@ -8,21 +8,21 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.StringJoiner;
 import org.apache.commons.cli.CommandLine;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.MyOption;
 import org.kimtaehoondev.utils.ArgsParser;
 
+// TODO -H 여러개 붙이면 하나만 먹는 이슈 해결하기
 public class MyCurl {
+    public static final String CRLF = "\r\n";
+
     private final HttpRequest request;
     private final BufferedReader console;
-    private final BufferedWriter terminal;
 
     public MyCurl(String[] args) {
         this.request = makeHttpRequest(args);
         this.console = new BufferedReader(new InputStreamReader(System.in));
-        this.terminal = new BufferedWriter(new OutputStreamWriter(System.out));
     }
 
     public void run() {
@@ -35,14 +35,16 @@ public class MyCurl {
             // 메세지를 한줄씩 서버로 보낸다
             String[] lines = request.serialize().split("\n");
             for (String line : lines) {
-                writerToServer.write(line);
+                System.out.println("request |" + line);
+                writerToServer.write(line+CRLF);
             }
+            writerToServer.write(CRLF);
             writerToServer.flush();
 
             // 한줄씩 응답을 출력한다
             String line;
             while ((line = readerFromServer.readLine()) != null) {
-                System.out.println("line = " + line);
+                System.out.println("response |" + line);
             }
 
         } catch (UnknownHostException e) {
@@ -50,10 +52,6 @@ public class MyCurl {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //1. URL 연결
-        // 2. 요청보내고, 응답받아옴
-        // 3. 응답을 console에 출력
     }
 
     public HttpRequest makeHttpRequest(String[] args) {
