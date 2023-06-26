@@ -21,11 +21,9 @@ public class MyCurl {
     public static final String CRLF = "\r\n";
 
     private final HttpRequestFactory httpRequestFactory;
-    private final BufferedReader console;
 
     public MyCurl() {
         httpRequestFactory = new HttpRequestFactory();
-        this.console = new BufferedReader(new InputStreamReader(System.in));
     }
 
     public void run(String[] args) {
@@ -37,33 +35,8 @@ public class MyCurl {
             BufferedWriter writerToServer =
                 new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-            // 메세지를 한줄씩 서버로 보낸다
-            List<String> lines = request.serialize();
-            for (String line : lines) {
-                System.out.println("request |" + line);
-                writerToServer.write(line + CRLF);
-            }
-            writerToServer.write(CRLF);
-            writerToServer.flush();
-
-
-            HttpResponse httpResponse = new HttpResponse();
-            String line;
-            line = readerFromServer.readLine();
-            httpResponse.setStartLine(line);
-            while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
-                // 헤더를 만든다
-                System.out.println("resp[:" + line);
-                httpResponse.addHeader(line);
-            }
-
-            // Content-Length타입일 때
-            int totalLength = 0;
-            while (httpResponse.getContentLength() != totalLength
-                && (line = readerFromServer.readLine()) != null) {
-                totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
-                System.out.println("body:" + line);
-            }
+            sendRequestToServer(request, writerToServer);
+            receiveResponseFromServer(readerFromServer);
 
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -71,5 +44,39 @@ public class MyCurl {
             throw new RuntimeException(e);
         }
     }
+
+
+    private void sendRequestToServer(HttpRequest request, BufferedWriter writerToServer)
+        throws IOException {
+        // 메세지를 한줄씩 서버로 보낸다
+        List<String> lines = request.serialize();
+        for (String line : lines) {
+            System.out.println("request |" + line);
+            writerToServer.write(line + CRLF);
+        }
+        writerToServer.write(CRLF);
+        writerToServer.flush();
+    }
+
+    private void receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
+        HttpResponse httpResponse = new HttpResponse();
+        String line;
+        line = readerFromServer.readLine();
+        httpResponse.setStartLine(line);
+        while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
+            // 헤더를 만든다
+            System.out.println("resp[:" + line);
+            httpResponse.addHeader(line);
+        }
+
+        // Content-Length타입일 때
+        int totalLength = 0;
+        while (httpResponse.getContentLength() != totalLength
+            && (line = readerFromServer.readLine()) != null) {
+            totalLength += ("\n".length() + line.getBytes(StandardCharsets.UTF_8).length);
+            System.out.println("body:" + line);
+        }
+    }
+
 }
 
