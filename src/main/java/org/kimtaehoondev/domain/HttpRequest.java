@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
+import org.apache.commons.cli.Option;
 import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequest {
@@ -133,16 +134,20 @@ public class HttpRequest {
             return new HttpRequest(requestTarget, httpMethod, httpVersion, headers, body);
         }
 
-        public Builder setValueUsingParams(MyOption option, String optionValue) {
-            if (option == MyOption.HTTP_REQUEST_METHOD) {
+        public Builder setValueUsingParams(Option option) {
+            // getOpt로 Enum을 찾아와서 ~~
+
+            String optionValue = option.getValue();
+
+            if (option.getOpt() == MyOption.HTTP_REQUEST_METHOD.getOptName()) {
                 this.httpMethod = HttpMethod.find(optionValue);
                 return this;
             }
-            if (option == MyOption.HEADER) {
+            if (option.getOpt() == MyOption.HEADER.getOptName()) {
                 addHeader(optionValue);
                 return this;
             }
-            if (option == MyOption.DATA) {
+            if (option.getOpt() == MyOption.DATA.getOptName()) {
                 this.body = optionValue;
                 return this;
             }

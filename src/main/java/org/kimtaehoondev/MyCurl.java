@@ -9,11 +9,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
 import org.kimtaehoondev.domain.HttpRequest;
-import org.kimtaehoondev.domain.MyOption;
 import org.kimtaehoondev.utils.ArgsParser;
 
-// TODO -H 여러개 붙이면 하나만 먹는 이슈 해결하기
 public class MyCurl {
     public static final String CRLF = "\r\n";
 
@@ -61,11 +60,8 @@ public class MyCurl {
         String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
         CommandLine commandLine = ArgsParser.makeCmdUsingArgs(argsExceptUrl);
 
-        for (MyOption option : MyOption.values()) {
-            String optName = option.getOptName();
-            if (commandLine.hasOption(optName)) {
-                httpRequestBuilder.setValueUsingParams(option, commandLine.getOptionValue(optName));
-            }
+        for(Option option : commandLine.getOptions()) {
+            httpRequestBuilder.setValueUsingParams(option);
         }
         return httpRequestBuilder.build();
     }
