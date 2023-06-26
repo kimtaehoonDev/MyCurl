@@ -43,6 +43,7 @@ public class HttpRequest {
             .map(Header::getPrettier)
             .collect(Collectors.toList());
         result.addAll(total);
+        result.add("");
 
         if (body != null) {
             result.add(body);
