@@ -16,15 +16,17 @@ import org.kimtaehoondev.utils.ArgsParser;
 public class MyCurl {
     public static final String CRLF = "\r\n";
 
-    private final HttpRequest request;
+    private final HttpRequestFactory httpRequestFactory;
     private final BufferedReader console;
 
-    public MyCurl(String[] args) {
-        this.request = makeHttpRequest(args);
+    public MyCurl() {
+        httpRequestFactory = new HttpRequestFactory();
         this.console = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    public void run() {
+    public void run(String[] args) {
+        HttpRequest request = httpRequestFactory.make(args);
+
         try (Socket socket = new Socket(request.getHost(), request.getPort())) {
             BufferedReader readerFromServer =
                 new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -51,19 +53,6 @@ public class MyCurl {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public HttpRequest makeHttpRequest(String[] args) {
-        String url = args[args.length - 1];
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(url);
-
-        String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
-        CommandLine commandLine = ArgsParser.makeCmdUsingArgs(argsExceptUrl);
-
-        for(Option option : commandLine.getOptions()) {
-            httpRequestBuilder.setValueUsingParams(option);
-        }
-        return httpRequestBuilder.build();
     }
 }
 
