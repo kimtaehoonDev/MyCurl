@@ -22,19 +22,6 @@ public class HttpResponse {
         httpStatus = Integer.parseInt(values[1]);
     }
 
-    public void addHeader(String line) {
-        List<String> values = Arrays.stream(line.split(":"))
-            .map(String::trim)
-            .collect(Collectors.toList());
-        headers.put(values.get(0), values.get(1));
-
-        if (values.get(0).equals("Transfer-Encoding") && values.get(1).equals("chunked")) {
-            isChunked = true;
-        }
-        if (values.get(0).equals("Content-Length")) {
-            contentLength = Integer.parseInt(values.get(1));
-        }
-    }
 
     public Integer getContentLength() {
         return contentLength;
@@ -51,6 +38,26 @@ public class HttpResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public void setHeaders(List<String> headers) {
+        for (String header : headers) {
+            addHeader(header);
+        }
+    }
+
+    private void addHeader(String line) {
+        List<String> values = Arrays.stream(line.split(":"))
+            .map(String::trim)
+            .collect(Collectors.toList());
+        headers.put(values.get(0), values.get(1));
+
+        if (values.get(0).equals("Transfer-Encoding") && values.get(1).equals("chunked")) {
+            isChunked = true;
+        }
+        if (values.get(0).equals("Content-Length")) {
+            contentLength = Integer.parseInt(values.get(1));
+        }
     }
 
     public String serialize() {

@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import org.kimtaehoondev.domain.HttpRequest;
@@ -34,8 +35,8 @@ public class MyCurl {
 
             sendRequestToServer(request, writerToServer);
             HttpResponse httpResponse = receiveResponseFromServer(readerFromServer);
-            System.out.println(httpResponse.serialize());
 
+            System.out.println(httpResponse.serialize());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -58,26 +59,31 @@ public class MyCurl {
     }
 
     /**
-     * 서버에서 응답을 받아온다
+     * 서버에서 응답을 받아온다.
+     * 바디를 파싱하기 위한 정보를 얻기 위해 헤더를 따로 얻어낸다
      */
     private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
         HttpResponse httpResponse = new HttpResponse();
 
-        receiveResponseHeaderFromServer(httpResponse, readerFromServer);
+        httpResponse.setStartLine(readerFromServer.readLine());
+
+        List<String> headers = receiveResponseHeaderFromServer(readerFromServer);
+        httpResponse.setHeaders(headers);
+
         String body = receiveResponseBodyFromServer(httpResponse, readerFromServer);
         httpResponse.setBody(body);
 
         return httpResponse;
     }
 
-    private static void receiveResponseHeaderFromServer(HttpResponse httpResponse, BufferedReader readerFromServer)
+    private List<String> receiveResponseHeaderFromServer(BufferedReader readerFromServer)
         throws IOException {
-        String line = readerFromServer.readLine();
-        httpResponse.setStartLine(line);
-
+        List<String> headers = new ArrayList<>();
+        String line;
         while ((line = readerFromServer.readLine()) != null && !line.isEmpty()) {
-            httpResponse.addHeader(line);
+            headers.add(line);
         }
+        return headers;
     }
 
     private String receiveResponseBodyFromServer(HttpResponse httpResponse,
