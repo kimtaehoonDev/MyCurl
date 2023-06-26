@@ -6,16 +6,18 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class Header {
-    public static final int KEY = 0;
-    public static final int VALUE = 1;
+    private static final int KEY_VALUE_SIZE = 2;
+    private static final int KEY = 0;
+    private static final int VALUE = 1;
+    private static final String DELIMITER = ":";
+
     private final String key;
     private final String value;
 
     public Header(String data) {
-        List<String> keyAndValue = Arrays.stream(data.split(":"))
+        List<String> keyAndValue = Arrays.stream(data.split(DELIMITER, KEY_VALUE_SIZE))
             .map(String::trim)
             .collect(Collectors.toList());
-        // TODO 크기
         this.key = keyAndValue.get(KEY);
         this.value = keyAndValue.get(VALUE);
     }
