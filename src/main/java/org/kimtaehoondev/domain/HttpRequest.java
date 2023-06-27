@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.Option;
-import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequest {
+    private static final HttpMethod DEFAULT_HTTP_METHOD = HttpMethod.GET;
+    private static final String DEFAULT_HTTP_VERSION = "HTTP/1.1";
+    private static final String EMPTY_LINE = "";
 
-    private final RequestTarget requestTarget;
+
+    private final String requestTarget;
 
     private final HttpMethod httpMethod;
 
@@ -19,7 +22,7 @@ public class HttpRequest {
 
     private final String body;
 
-    protected HttpRequest(RequestTarget requestTarget, HttpMethod httpMethod, String httpVersion,
+    protected HttpRequest(String requestTarget, HttpMethod httpMethod, String httpVersion,
                           Headers headers, String body) {
         this.requestTarget = requestTarget;
         this.httpMethod = httpMethod;
@@ -35,14 +38,14 @@ public class HttpRequest {
 
     public List<String> serialize() {
         List<String> result = new ArrayList<>();
-        String startLine = httpMethod + " " + requestTarget.getValue() + " " + httpVersion;
+        String startLine = httpMethod + " " + requestTarget + " " + httpVersion;
         result.add(startLine);
 
         List<String> total = headers.getAll().stream()
             .map(Header::getPrettier)
             .collect(Collectors.toList());
         result.addAll(total);
-        result.add("");
+        result.add(EMPTY_LINE);
 
         if (body != null) {
             result.add(body);
@@ -70,7 +73,7 @@ public class HttpRequest {
     }
 
     public static class Builder {
-        private final RequestTarget requestTarget;
+        private final String requestTarget;
         private HttpMethod httpMethod;
         private String httpVersion;
         private final Headers headers;
@@ -82,9 +85,9 @@ public class HttpRequest {
                 requestTarget = "/";
             }
 
-            this.requestTarget = new RequestTarget(path);
-            this.httpMethod = HttpMethod.GET;
-            this.httpVersion = "HTTP/1.1";
+            this.requestTarget = requestTarget;
+            this.httpMethod = DEFAULT_HTTP_METHOD;
+            this.httpVersion = DEFAULT_HTTP_VERSION;
             this.headers = new Headers();
             String host = url.getHost();
             if (url.getPort() != -1) {
