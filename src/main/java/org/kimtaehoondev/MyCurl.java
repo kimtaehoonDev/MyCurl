@@ -64,17 +64,16 @@ public class MyCurl {
      * 바디를 파싱하기 위한 정보를 얻기 위해 헤더를 따로 얻어낸다
      */
     private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
-        HttpResponse httpResponse = new HttpResponse();
+        HttpResponse.Builder builder = HttpResponse.builder();
 
-        httpResponse.setStartLine(readerFromServer.readLine());
-
+        builder.setStartLine(readerFromServer.readLine());
         List<Header> headers = receiveResponseHeaderFromServer(readerFromServer);
-        httpResponse.setHeaders(headers);
+        builder.setHeaders(headers);
 
-        String body = receiveResponseBodyFromServer(httpResponse, readerFromServer);
-        httpResponse.setBody(body);
+        String body = receiveResponseBodyFromServer(builder, readerFromServer);
+        builder.setBody(body);
 
-        return httpResponse;
+        return builder.build();
     }
 
     private List<Header> receiveResponseHeaderFromServer(BufferedReader readerFromServer)
@@ -87,12 +86,12 @@ public class MyCurl {
         return headers;
     }
 
-    private String receiveResponseBodyFromServer(HttpResponse httpResponse,
+    private String receiveResponseBodyFromServer(HttpResponse.Builder httpResponseBuilder,
                                                  BufferedReader readerFromServer) throws IOException {
         StringJoiner stringJoiner = new StringJoiner("\n");
         String line;
 
-        if (httpResponse.isChunked()) {
+        if (httpResponseBuilder.isChunked()) {
             Integer chunkedSize;
             while (true) {
                 chunkedSize = Integer.parseInt(readerFromServer.readLine(), 16); // 16진수
@@ -106,7 +105,7 @@ public class MyCurl {
         }
 
         int totalLength = 0;
-        while (httpResponse.getContentLength() != totalLength
+        while (httpResponseBuilder.getContentLength() != totalLength
             && (line = readerFromServer.readLine()) != null) {
             totalLength += (LINE_BREAK_LENGTH + line.getBytes(StandardCharsets.UTF_8).length);
             stringJoiner.add(line);
