@@ -5,11 +5,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.utils.ArgsParser;
+import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequestFactory {
     public HttpRequest make(String[] args) {
         String url = args[args.length - 1];
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(url);
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(UrlParser.parse(url));
 
         String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
         CommandLine commandLine = ArgsParser.makeCmdUsingArgs(argsExceptUrl);

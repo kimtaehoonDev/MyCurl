@@ -28,7 +28,7 @@ public class HttpRequest {
         this.body = body;
     }
 
-    public static Builder builder(String url) {
+    public static Builder builder(URL url) {
         return Builder.builder(url);
     }
 
@@ -76,21 +76,24 @@ public class HttpRequest {
         private final Headers headers;
         private String body;
 
-        private Builder(String urlValue) {
-            URL url = UrlParser.parse(urlValue);
-            String path = url.getPath();
-            if (path.isBlank()) {
-                path = "/";
+        private Builder(URL url) {
+            String requestTarget = url.getFile();
+            if (requestTarget.isBlank()) {
+                requestTarget = "/";
             }
 
             this.requestTarget = new RequestTarget(path);
             this.httpMethod = HttpMethod.GET;
             this.httpVersion = "HTTP/1.1";
             this.headers = new Headers();
-            this.headers.put(HeaderName.HOST, url.getHost() + ":" + url.getPort());
+            String host = url.getHost();
+            if (url.getPort() != -1) {
+                host += (":" + url.getPort());
+            }
+            this.headers.put(HeaderName.HOST, host);
         }
 
-        public static Builder builder(String url) {
+        public static Builder builder(URL url) {
             return new Builder(url);
         }
 
