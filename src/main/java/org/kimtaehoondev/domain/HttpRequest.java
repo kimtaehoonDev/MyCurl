@@ -3,7 +3,6 @@ package org.kimtaehoondev.domain;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.utils.UrlParser;
@@ -71,10 +70,6 @@ public class HttpRequest {
     }
 
     public static class Builder {
-        public static final String SPLITTER = ":";
-        public static final int NAME = 0;
-        public static final int VALUE = 1;
-
         private final RequestTarget requestTarget;
         private HttpMethod httpMethod;
         private String httpVersion;
@@ -119,7 +114,7 @@ public class HttpRequest {
                 return this;
             }
             if (option.getOpt() == MyOption.HEADER.getOptName()) {
-                addHeader(optionValue);
+                addHeader(new Header(optionValue));
                 return this;
             }
             if (option.getOpt() == MyOption.DATA.getOptName()) {
@@ -129,17 +124,8 @@ public class HttpRequest {
             throw new RuntimeException("선택할 수 없는 Option입니다");
         }
 
-        private void addHeader(String value) {
-            String[] nameAndValue = value.split(SPLITTER);
-            if (nameAndValue.length != 2) {
-                throw new RuntimeException("헤더와 값으로만 이뤄져야 한다");
-            }
-            HeaderName headerName = new HeaderName(nameAndValue[NAME].trim());
-            String headerValue = nameAndValue[VALUE].trim();
-            if (headers.containsKey(headerName)) {
-                throw new RuntimeException("이미 존재하는 헤더");
-            }
-            headers.put(headerName, headerValue);
+        private void addHeader(Header header) {
+            headers.put(header.getKey(), header.getValue());
         }
     }
 }
