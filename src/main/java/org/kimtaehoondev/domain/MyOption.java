@@ -18,7 +18,6 @@ public enum MyOption {
         Option.Builder builder = Option.builder()
             .option(opt)
             .longOpt(longOpt)
-            .valueSeparator(' ')
             .desc(description)
             .hasArg(hasArgs);
         if (argName != null) {
