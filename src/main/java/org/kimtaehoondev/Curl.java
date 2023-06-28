@@ -15,13 +15,13 @@ import org.kimtaehoondev.domain.Header;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.HttpResponse;
 
-public class MyCurl {
+public class Curl {
     public static final String CRLF = "\r\n";
     public static final int LINE_BREAK_LENGTH = 1;
 
     private final HttpRequestFactory httpRequestFactory;
 
-    public MyCurl() {
+    public Curl() {
         httpRequestFactory = new HttpRequestFactory();
     }
 
