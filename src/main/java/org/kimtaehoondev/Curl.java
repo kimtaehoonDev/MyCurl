@@ -6,14 +6,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import org.kimtaehoondev.domain.Header;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.HttpResponse;
+import org.kimtaehoondev.utils.UrlParser;
 
 public class Curl {
     public static final String CRLF = "\r\n";
@@ -26,9 +29,11 @@ public class Curl {
     }
 
     public void run(String[] args) {
-        HttpRequest request = httpRequestFactory.make(args);
+        URL url = UrlParser.parse(args[args.length - 1]);
+        String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
+        HttpRequest request = httpRequestFactory.make(url, argsExceptUrl);
 
-        try (Socket socket = new Socket(request.getHost(), request.getPort())) {
+        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
             BufferedReader readerFromServer =
                 new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter writerToServer =

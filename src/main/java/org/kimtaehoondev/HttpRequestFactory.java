@@ -1,19 +1,15 @@
 package org.kimtaehoondev;
 
-import java.util.Arrays;
+import java.net.URL;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.utils.ArgsParser;
-import org.kimtaehoondev.utils.UrlParser;
 
 public class HttpRequestFactory {
-    public HttpRequest make(String[] args) {
-        String url = args[args.length - 1];
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(UrlParser.parse(url));
-
-        String[] argsExceptUrl = Arrays.copyOfRange(args, 0, args.length - 1);
-        CommandLine commandLine = ArgsParser.makeCmdUsingArgs(argsExceptUrl);
+    public HttpRequest make(URL url, String[] args) {
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(url);
+        CommandLine commandLine = ArgsParser.makeCmdUsingArgs(args);
 
         for(Option option : commandLine.getOptions()) {
             httpRequestBuilder.setValueUsingParams(option);
