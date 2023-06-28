@@ -19,6 +19,7 @@ import org.kimtaehoondev.domain.HttpResponse;
 import org.kimtaehoondev.utils.UrlParser;
 
 public class Curl {
+    public static final int DEFAULT_PORT = 80;
     public static final String CRLF = "\r\n";
     public static final int LINE_BREAK_LENGTH = 1;
 
