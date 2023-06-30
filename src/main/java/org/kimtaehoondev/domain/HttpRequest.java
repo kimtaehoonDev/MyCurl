@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.Option;
 
 public class HttpRequest {
+    public static final String CRLF = "\r\n";
     private static final HttpMethod DEFAULT_HTTP_METHOD = HttpMethod.GET;
     private static final String DEFAULT_HTTP_VERSION = "HTTP/1.1";
     private static final String EMPTY_LINE = "";

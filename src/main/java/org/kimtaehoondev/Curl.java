@@ -19,10 +19,6 @@ import org.kimtaehoondev.domain.HttpResponse;
 import org.kimtaehoondev.utils.UrlParser;
 
 public class Curl {
-    public static final int DEFAULT_PORT = 80;
-    public static final String CRLF = "\r\n";
-    public static final int LINE_BREAK_LENGTH = 1;
-
     private final HttpRequestFactory httpRequestFactory;
 
     public Curl() {
@@ -60,7 +56,7 @@ public class Curl {
         throws IOException {
         List<String> lines = request.serialize();
         for (String line : lines) {
-            writerToServer.write(line + CRLF);
+            writerToServer.write(line + HttpRequest.CRLF);
         }
         writerToServer.flush();
     }
@@ -94,10 +90,9 @@ public class Curl {
 
     private String receiveResponseBodyFromServer(HttpResponse.Builder httpResponseBuilder,
                                                  BufferedReader readerFromServer) throws IOException {
-        StringJoiner stringJoiner = new StringJoiner("\n");
-        String line;
-
         if (httpResponseBuilder.isChunked()) {
+            StringJoiner stringJoiner = new StringJoiner("\n");
+            String line;
             Integer chunkedSize;
             while (true) {
                 chunkedSize = Integer.parseInt(readerFromServer.readLine(), 16); // 16진수
@@ -111,12 +106,14 @@ public class Curl {
         }
 
         int totalLength = 0;
-        while (httpResponseBuilder.getContentLength() != totalLength
-            && (line = readerFromServer.readLine()) != null) {
-            totalLength += (LINE_BREAK_LENGTH + line.getBytes(StandardCharsets.UTF_8).length);
-            stringJoiner.add(line);
+        int character;
+        StringBuilder sb = new StringBuilder();
+        while (totalLength != httpResponseBuilder.getContentLength() && ((character = readerFromServer.read()) != -1)) {
+            char c = (char) character;
+            totalLength += 1;
+            sb.append(c);
         }
-        return stringJoiner.toString();
+        return sb.toString();
     }
 
 }
