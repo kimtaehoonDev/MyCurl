@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.StringJoiner;
 import org.kimtaehoondev.domain.Header;
 import org.kimtaehoondev.domain.HttpRequest;
 import org.kimtaehoondev.domain.HttpResponse;
+import org.kimtaehoondev.factory.HttpRequestFactory;
 import org.kimtaehoondev.utils.UrlParser;
 
 public class Curl {
@@ -65,7 +65,8 @@ public class Curl {
      * 서버에서 응답을 받아온다.
      * 바디를 파싱하기 위한 정보를 얻기 위해 헤더를 따로 얻어낸다
      */
-    private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer) throws IOException {
+    private HttpResponse receiveResponseFromServer(BufferedReader readerFromServer)
+        throws IOException {
         HttpResponse.Builder builder = HttpResponse.builder();
 
         builder.setStartLine(readerFromServer.readLine());
@@ -89,7 +90,8 @@ public class Curl {
     }
 
     private String receiveResponseBodyFromServer(HttpResponse.Builder httpResponseBuilder,
-                                                 BufferedReader readerFromServer) throws IOException {
+                                                 BufferedReader readerFromServer)
+        throws IOException {
         if (httpResponseBuilder.isChunked()) {
             StringJoiner stringJoiner = new StringJoiner("\n");
             String line;
@@ -108,7 +110,8 @@ public class Curl {
         int totalLength = 0;
         int character;
         StringBuilder sb = new StringBuilder();
-        while (totalLength != httpResponseBuilder.getContentLength() && ((character = readerFromServer.read()) != -1)) {
+        while (totalLength != httpResponseBuilder.getContentLength() &&
+            ((character = readerFromServer.read()) != -1)) {
             char c = (char) character;
             totalLength += 1;
             sb.append(c);

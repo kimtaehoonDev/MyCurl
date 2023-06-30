@@ -7,7 +7,6 @@ public class HeaderName {
     private final String value;
 
     public HeaderName(String value) {
-        // TODO 타입 적절한지 검사한다
         this.value = value.toLowerCase().trim();
     }
 
