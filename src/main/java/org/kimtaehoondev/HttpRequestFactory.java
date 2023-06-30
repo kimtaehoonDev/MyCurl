@@ -8,13 +8,12 @@ import org.kimtaehoondev.utils.ArgsParser;
 
 public class HttpRequestFactory {
     public HttpRequest make(URL url, String[] args) {
-        HttpRequest.Builder httpRequestBuilder = HttpRequest.builder(url);
+        HttpRequest httpRequest = new HttpRequest(url);
         CommandLine commandLine = ArgsParser.makeCmdUsingArgs(args);
-
-        for(Option option : commandLine.getOptions()) {
-            httpRequestBuilder.setValueUsingParams(option);
+        for (Option option : commandLine.getOptions()) {
+            httpRequest.setValueUsingParams(option);
         }
-        return httpRequestBuilder.build();
+        return httpRequest;
     }
 
 }
